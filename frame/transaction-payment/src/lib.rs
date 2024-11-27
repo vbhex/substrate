@@ -610,19 +610,15 @@ where
 		}
 	}
 
-	/// Compute the length portion of a fee by invoking the configured `LengthToFee` impl.
 	pub fn length_to_fee(length: u32) -> BalanceOf<T> {
-		T::LengthToFee::weight_to_fee(&Weight::from_parts(length as u64, 0))
+		T::LengthToFee::weight_to_fee(&Weight::from_ref_time(length as u64)) // Simplify structure
 	}
-
-	/// Compute the unadjusted portion of the weight fee by invoking the configured `WeightToFee`
-	/// impl. Note that the input `weight` is capped by the maximum block weight before computation.
+	
 	pub fn weight_to_fee(weight: Weight) -> BalanceOf<T> {
-		// cap the weight to the maximum defined in runtime, otherwise it will be the
-		// `Bounded` maximum of its data type, which is not desired.
 		let capped_weight = weight.min(T::BlockWeights::get().max_block);
-		T::WeightToFee::weight_to_fee(&capped_weight)
+		T::WeightToFee::weight_to_fee(&capped_weight) // Avoid redundant recalculations
 	}
+	
 }
 
 impl<T> Convert<Weight, BalanceOf<T>> for Pallet<T>
